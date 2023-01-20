@@ -1,0 +1,181 @@
+﻿<Window x:Class="TodoListWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TodoListWPF"
+        mc:Ignorable="d"
+        Title="Список задач" Height="450" Width="600"
+        Loaded="MainWindow_OnLoaded">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="local:DataCommands.Edit" Executed="EditTask_Click" />
+        <CommandBinding Command="local:DataCommands.Delete" Executed="DeleteTask_Click" />
+        <CommandBinding Command="local:DataCommands.ShowDescription" Executed="ShowDescription_Click" />
+    </Window.CommandBindings>
+    
+    <Window.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="TaskItemTemplate">
+
+                <Grid Height="35" x:Name="TemplateGrid">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <CheckBox IsChecked="{Binding Path=IsCompleted}" ToolTip="Выполнено"/>
+                        <TextBlock Text="{Binding Path=Name}" Margin="5,0,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,0,0">
+                        <Button Width="30" Height="25" Margin="0,0,0,1" Command="local:DataCommands.ShowDescription" CommandParameter="{Binding}" ToolTip="Просмотр описания" BorderThickness="0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Grid Width="20" Height="20">
+                                                    <Image x:Name="InfoButtonImage" Source="Images/info.png"/>
+                                                </Grid>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="InfoButtonImage" Property="Source" Value="Images/info_hovered.png"/>
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Width="20" Height="20" Command="local:DataCommands.Edit" CommandParameter="{Binding}" ToolTip="Редактировать" BorderThickness="0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Grid Width="20" Height="20">
+                                                    <Image x:Name="EditButtonImage" Source="Images/edit.png"/>
+                                                </Grid>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="EditButtonImage" Property="Source" Value="Images/edit_hovered.png"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Width="20" Height="20" Command="local:DataCommands.Delete" CommandParameter="{Binding}" ToolTip="Удалить задачу" BorderThickness="0" Margin="5,0,5,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Grid Width="20" Height="20">
+                                                    <Image x:Name="DeleteButtonImage" Source="Images/delete.png"/>
+                                                </Grid>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="DeleteButtonImage" Property="Source" Value="Images/delete_hovered.png"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <ToggleButton IsChecked="{Binding Path=IsImportant}" ToolTip="Важно" HorizontalAlignment="Right" VerticalAlignment="Center" Height="25">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image>
+                                            <Image.Style>
+                                                <Style>
+                                                    <Setter Property="Image.Source" Value="Images/unstarred.png" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                            <Setter Property="Image.Source" Value="Images/starred.png" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+
+                                        <ContentPresenter Content="{TemplateBinding Content}" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding Path=DateTime, StringFormat={}Дата напоминания: {0:yy-MM-dd HH:mm}}" VerticalAlignment="Bottom" 
+                               FontSize="10" Margin="0,0,0,5" Width="200" HorizontalAlignment="Left">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DateTime}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                        <Setter TargetName="TemplateGrid" Property="Opacity" Value="0.4"/>
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <TabControl x:Name="TaskTab" TabStripPlacement="Left" HorizontalContentAlignment="Left" SelectedIndex="{Binding Path=CurrentTab}"
+                    SelectionChanged="TaskTab_OnSelectionChanged" >
+            <TabItem Header="Все задачи" Width="150" Height="25" IsSelected="True">
+                <Grid>
+                    <ListView x:Name="AllTasksList" ItemsSource="{Binding FilteredTasks}" ItemTemplate="{StaticResource TaskItemTemplate}" HorizontalContentAlignment="Stretch" BorderThickness="0"/>
+                    <TextBlock x:Name="AllTasksNoneTB" Text="Ни одной задачи не найдено. Добавьте новую!" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Сегодня" Width="150" Height="25">
+                <Grid>
+                    <ListView x:Name="TodayTasksList" ItemsSource="{Binding FilteredTasks}" ItemTemplate="{StaticResource TaskItemTemplate}" HorizontalContentAlignment="Stretch" BorderThickness="0"/>
+                    <TextBlock x:Name="TodayTasksNoneTB" Text="На сегодня нет ни одной задачи"  VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Важные" Width="150" Height="25">
+                <Grid>
+                    <ListView x:Name="ImportantTasksList" ItemsSource="{Binding FilteredTasks}" ItemTemplate="{StaticResource TaskItemTemplate}" HorizontalContentAlignment="Stretch" BorderThickness="0"/>
+                    <TextBlock x:Name="ImportantTasksNoneTB" Text="Важных задач нет"  VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Просрочено" Width="150" Height="25">
+                <Grid>
+                    <ListView x:Name="ExpiredTasksList" ItemsSource="{Binding FilteredTasks}" ItemTemplate="{StaticResource TaskItemTemplate}" HorizontalContentAlignment="Stretch" BorderThickness="0"/>
+                    <TextBlock x:Name="ExpiredTasksNoneTB" Text="Просроченных задач нет"  VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Выполнено" Width="150" Height="25">
+                <Grid>
+                    <ListView x:Name="DoneTasksList" ItemsSource="{Binding FilteredTasks}" ItemTemplate="{StaticResource TaskItemTemplate}" HorizontalContentAlignment="Stretch" BorderThickness="0"/>
+                    <TextBlock x:Name="DoneTasksNoneTB" Text="Выполненных задач нет"  VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <Button VerticalAlignment="Bottom" Height="25" Width="130" Content="Добавить задачу" HorizontalAlignment="Left" Margin="10,0,10,5"
+                x:Name="AddTaskButton" Click="AddTaskButton_OnClick"/>
+    </Grid>
+</Window>
